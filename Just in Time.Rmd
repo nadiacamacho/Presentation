@@ -1,0 +1,129 @@
+---
+title: "Just In Time"
+author: "Dr. sHoemaker, Skyler Phillips, Nadia Camacho"
+date: "2024-04-10"
+output: slidy_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+In today's presentation, we'll delve into the world of data analysis using R, specifically focusing on analyzing employee data stored in an Excel sheet. Our aim is to demonstrate practical skills that are widely applicable in real-life scenarios, whether you're a beginner or have some intermediate knowledge in R programming. We'll be utilizing the Tidyverse package, particularly dplyr, for data manipulation and ggplot2 for data visualization.
+</center>
+![](images-3.jpeg){width=40%}
+
+## Loading in Excel
+We're installing and loading a tool called "readxl" to read Excel files. Then, we're importing data from an Excel file named "Employee Sample Data.xlsx" into our program, likely containing employee information. Lastly, we're removing any incomplete rows from this data using "na.omit()".
+```{r}
+#Install.packages("readxl)
+library(readxl)
+employee <- read_excel("~/Downloads/EmployeeSampleData copy.xlsx")
+na.omit(employee)
+head(employee,5)
+```
+
+## Understanding Departmental Salary Differences
+This code efficiently groups employee data by department using `group_by()` and calculates the average salary for each department with `summarise()`. Utilizing `ggplot2`, it visualizes these findings as a bar chart, where each bar represents a department and its height reflects the average salary. This visual representation aids in quickly grasping salary disparities between departments, facilitating informed decision-making regarding compensation strategies.
+```{r}
+library(tidyverse)
+
+salary_by_dep <- employee %>%
+  group_by(Department) %>%
+  summarise(mean_salary = mean(`Annual Salary`))
+
+salary_by_dep
+
+options(scipen = 999)
+# Visualize the distribution of salaries among different departments
+ggplot(salary_by_dep, aes(x = Department, y = mean_salary, fill = Department)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Annual Salary by Department",
+       x = "Department",
+       y = "Average Annual Salary (USD)") +
+  theme_minimal()
+```
+ 
+## Spotlight on Salary: Identifying Top Earners and Lowest Payers
+This code efficiently finds the employee with the highest and lowest salaries by comparing their annual salaries to the dataset's maximum and minimum values. It uses the `filter()` function from the `dplyr` package to isolate the rows where the "Annual Salary" matches either extreme. The resulting variables provide the details of these top and bottom earners, giving a clear view of the salary distribution in the dataset.
+```{r}
+# Find the employee who makes the most
+employee_max_salary <- employee %>%
+  filter(`Annual Salary` == max(`Annual Salary`))
+employee_max_salary
+
+# Find the employee who makes the least
+employee_min_salary <- employee %>%
+  filter(`Annual Salary` == min(`Annual Salary`))
+employee_min_salary
+```
+
+## Count the number of employees by ethnicity
+```{r}
+# Count the number of employees by ethnicity
+ethnicity_counts <- table(employee$Ethnicity)
+ethnicity_counts
+
+gender_counts <- table(employee$Gender)
+gender_counts
+
+```
+
+## Visualize the distribution of employee ages
+```{r}
+# Visualize the distribution of employee ages
+ggplot(employee, aes(x = Age, y = `Annual Salary`, color = Gender)) +
+  geom_point() +
+  scale_color_manual(values = c("blue", "pink")) +
+  labs(title = "Scatterplot of Employee Age vs. Salary",
+       x = "Age",
+       y = "Salary")
+
+```
+
+
+## Starwars Dataset
+```{r}
+head(starwars, 5)
+```
+
+Here, we filter the dataset to include only characters classified as "Human" in the "species" column. Then, we count the number of rows in this filtered dataset to determine the total number of human characters in the Star Wars universe.
+```{r}
+# Find the number of humans overall
+humans_overall <- starwars %>% filter(species == "Human") %>% nrow()
+humans_overall
+
+```
+
+
+This code filters the dataset to include only human characters, groups them by gender, and then calculates the count of characters belonging to each gender group
+```{r}
+# Find the number of humans by gender
+humans_by_gender <- starwars %>% filter(species == "Human") %>%
+  group_by(gender) %>%
+  summarize(count = n())
+humans_by_gender
+
+```
+
+
+This section groups the dataset by the "homeworld" column and counts the number of individuals from each homeworld.
+
+```{r}
+# Find the number of individuals from each homeworld
+individuals_by_homeworld <- starwars %>%
+  group_by(homeworld) %>%
+  summarize(count = n())
+
+```
+
+Finally, we create a scatter plot using the mass and height data of all individuals in the Star Wars dataset. Each point on the plot represents a character, with their mass on the x-axis, height on the y-axis, and their gender determining the color of the point.
+
+```{r}
+# Plot the mass and height of all individuals, color points by gender
+ggplot(starwars, aes(x = mass, y = height, color = gender)) +
+  geom_point()
+
+```
+
