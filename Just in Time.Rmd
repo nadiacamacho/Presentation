@@ -1,6 +1,6 @@
 ---
 title: "Just In Time"
-author: "Dr. sHoemaker, Skyler Phillips, Nadia Camacho"
+author: "Dr. Shoemaker, Skyler Phillips, & Nadia Camacho"
 date: "2024-04-10"
 output: slidy_presentation
 ---
@@ -11,23 +11,28 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Introduction
 In today's presentation, we'll delve into the world of data analysis using R, specifically focusing on analyzing employee data stored in an Excel sheet. Our aim is to demonstrate practical skills that are widely applicable in real-life scenarios, whether you're a beginner or have some intermediate knowledge in R programming. We'll be utilizing the Tidyverse package, particularly dplyr, for data manipulation and ggplot2 for data visualization.
+
+<center>
+![](image1.png){width=40%}
 </center>
-![](images-3.jpeg){width=40%}
 
 ## Loading in Excel
 We're installing and loading a tool called "readxl" to read Excel files. Then, we're importing data from an Excel file named "Employee Sample Data.xlsx" into our program, likely containing employee information. Lastly, we're removing any incomplete rows from this data using "na.omit()".
 ```{r}
 #Install.packages("readxl)
 library(readxl)
-employee <- read_excel("~/Downloads/EmployeeSampleData copy.xlsx")
-na.omit(employee)
-head(employee,5)
+employee <- read_excel("EmployeeSampleData copy.xlsx")
+#employee <- na.omit(employee)
+sort(colnames(employee))
+
+# Or we can use head(employee) to get a gimpse of what is in the dataset
 ```
 
 ## Understanding Departmental Salary Differences
 This code efficiently groups employee data by department using `group_by()` and calculates the average salary for each department with `summarise()`. Utilizing `ggplot2`, it visualizes these findings as a bar chart, where each bar represents a department and its height reflects the average salary. This visual representation aids in quickly grasping salary disparities between departments, facilitating informed decision-making regarding compensation strategies.
 ```{r}
 library(tidyverse)
+library(kableExtra)
 
 salary_by_dep <- employee %>%
   group_by(Department) %>%
@@ -48,37 +53,35 @@ ggplot(salary_by_dep, aes(x = Department, y = mean_salary, fill = Department)) +
 ## Spotlight on Salary: Identifying Top Earners and Lowest Payers
 This code efficiently finds the employee with the highest and lowest salaries by comparing their annual salaries to the dataset's maximum and minimum values. It uses the `filter()` function from the `dplyr` package to isolate the rows where the "Annual Salary" matches either extreme. The resulting variables provide the details of these top and bottom earners, giving a clear view of the salary distribution in the dataset.
 ```{r}
+library(kableExtra)
 # Find the employee who makes the most
 employee_max_salary <- employee %>%
-  filter(`Annual Salary` == max(`Annual Salary`))
+  filter(`Annual Salary` == max(`Annual Salary`)) %>%
+  kbl() %>%
+  kable_paper() %>%
+  scroll_box(height = "300px")
+
 employee_max_salary
+
 
 # Find the employee who makes the least
 employee_min_salary <- employee %>%
-  filter(`Annual Salary` == min(`Annual Salary`))
+  filter(`Annual Salary` == min(`Annual Salary`)) %>%
+  kbl() %>%
+  kable_paper() %>%
+  scroll_box(height = "300px")
+
 employee_min_salary
 ```
 
 ## Count the number of employees by ethnicity
 ```{r}
-# Count the number of employees by ethnicity
 ethnicity_counts <- table(employee$Ethnicity)
 ethnicity_counts
 
 gender_counts <- table(employee$Gender)
 gender_counts
 
-```
-
-## Visualize the distribution of employee ages
-```{r}
-# Visualize the distribution of employee ages
-ggplot(employee, aes(x = Age, y = `Annual Salary`, color = Gender)) +
-  geom_point() +
-  scale_color_manual(values = c("blue", "pink")) +
-  labs(title = "Scatterplot of Employee Age vs. Salary",
-       x = "Age",
-       y = "Salary")
 
 ```
 
