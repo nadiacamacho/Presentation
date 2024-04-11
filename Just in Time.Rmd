@@ -28,9 +28,25 @@ sort(colnames(employee))
 # Or we can use head(employee) to get a gimpse of what is in the dataset
 ```
 
+##  Data Manipulation with dplyr: Understanding and Utilizing the Basics
+What is dplyr?
+
+dplyr is an R package for efficient data manipulation. The symbol %>% (pronounced as "pipe") is used to chain these functions together, making the code more readable and concise. The skeleton of dplyr:
+
+- filtered_data <- data %>%
+  filter(condition) %>%
+  
+-  select(columns) %>%
+
+-  group_by(grouping_variable) %>%
+
+-  summarize(summary_variable = function(variable)) %>%
+
+-  arrange(sort_variable)
+
 ## Understanding Departmental Salary Differences
 This code efficiently groups employee data by department using `group_by()` and calculates the average salary for each department with `summarise()`. Utilizing `ggplot2`, it visualizes these findings as a bar chart, where each bar represents a department and its height reflects the average salary. This visual representation aids in quickly grasping salary disparities between departments, facilitating informed decision-making regarding compensation strategies.
-```{r}
+```{r message=FALSE}
 library(tidyverse)
 library(kableExtra)
 
@@ -38,7 +54,10 @@ salary_by_dep <- employee %>%
   group_by(Department) %>%
   summarise(mean_salary = mean(`Annual Salary`))
 
-salary_by_dep
+salary_by_dep%>%
+  kbl() %>%
+  kable_paper() %>%
+  scroll_box(height = "300px")
 
 options(scipen = 999)
 # Visualize the distribution of salaries among different departments
@@ -75,58 +94,71 @@ employee_min_salary
 ```
 
 ## Count the number of employees by ethnicity
+This code uses the table() function in R to tally the number of employees belonging to different ethnicities and genders. It creates two tables: one for ethnicity and another for gender, providing a clear summary of the diversity within the dataset
 ```{r}
 ethnicity_counts <- table(employee$Ethnicity)
 ethnicity_counts
 
 gender_counts <- table(employee$Gender)
 gender_counts
-
-
 ```
 
 
-## Starwars Dataset
-```{r}
-head(starwars, 5)
+## Moving on to SQL in R!
+What is SQL?
+
+SQL, or Structured Query Language, is a programming language used to manage and manipulate relational databases. The skeleton of a SQL query involves the following components:
+
+- SELECT: Specifies the columns you want to retrieve from the database.
+- FROM: Specifies the table or tables from which to retrieve the data.
+- WHERE: Filters the rows based on specified conditions.
+- GROUP BY: Groups the rows that have the same values into summary rows.
+- ORDER BY: Sorts the result set in ascending or descending order based on specified columns.
+
+```{r message=FALSE}
+library(palmerpenguins) #Public Dataset that we will be using
+library(sqldf) # Next slide we will discuss
 ```
 
-Here, we filter the dataset to include only characters classified as "Human" in the "species" column. Then, we count the number of rows in this filtered dataset to determine the total number of human characters in the Star Wars universe.
-```{r}
-# Find the number of humans overall
-humans_overall <- starwars %>% filter(species == "Human") %>% nrow()
-humans_overall
+## How can we use SQL in R?
+The `sqldf` library in R lets you use SQL commands to work with your data frames, which are like tables of data in R. So, instead of using R's built-in functions for manipulating data, you can write SQL queries to do things like filtering, sorting, and summarizing your data. It's like having a translator that lets you speak the language of databases (SQL) while working in R, making it easier to analyze your data in different ways.
 
+## Example:
+Extract the top ten male penguins based on body mass.
+```{r}
+q1 <- 'SELECT * FROM penguins '
+q2 <- 'WHERE sex = "male" '
+q3 <- 'ORDER BY body_mass_g DESC LIMIT 10'
+
+qstr <- paste(q1, q2, q3)
+sqldf(qstr)  %>%
+  kbl() %>%
+  kable_paper() %>%
+  scroll_box(height = "300px")
 ```
 
-
-This code filters the dataset to include only human characters, groups them by gender, and then calculates the count of characters belonging to each gender group
+## Example:
+Extract the set of penguins from species Gentoo or Chinstrap and display the result.  How many penguins are in this set?  How many of these penguins are Chinstraps? 
 ```{r}
-# Find the number of humans by gender
-humans_by_gender <- starwars %>% filter(species == "Human") %>%
-  group_by(gender) %>%
-  summarize(count = n())
-humans_by_gender
+q1 <- 'SELECT species, COUNT(*) AS n FROM penguins '
+q2 <- 'WHERE species = "Gentoo" OR species = "Chinstrap" '
+q3 <- 'GROUP BY species ORDER BY species'
 
+qstr <- paste(q1, q2, q3)
+penguins_species <- sqldf(qstr)
+penguins_species
+sum(penguins_species$n)
 ```
+## Example:
 
-
-This section groups the dataset by the "homeworld" column and counts the number of individuals from each homeworld.
-
+Extract the columns species, island, year, sex, and body_mass_g for female penguins sampled before 2009 and with body mass more than 3200 g.  Display the result.  How many records (rows) are in this data.frame?
 ```{r}
-# Find the number of individuals from each homeworld
-individuals_by_homeworld <- starwars %>%
-  group_by(homeworld) %>%
-  summarize(count = n())
-
+q1 <- 'SELECT species, island, year, sex, body_mass_g FROM penguins '
+q2 <- 'WHERE sex = "female" AND year < 2009 AND body_mass_g > 3200'
+qstr <- paste(q1, q2)
+bodymass_fpenguins <- sqldf(qstr)
+nrow(bodymass_fpenguins)
 ```
-
-Finally, we create a scatter plot using the mass and height data of all individuals in the Star Wars dataset. Each point on the plot represents a character, with their mass on the x-axis, height on the y-axis, and their gender determining the color of the point.
-
-```{r}
-# Plot the mass and height of all individuals, color points by gender
-ggplot(starwars, aes(x = mass, y = height, color = gender)) +
-  geom_point()
 
 ```
 
